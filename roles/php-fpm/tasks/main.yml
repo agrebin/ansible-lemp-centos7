@@ -1,0 +1,90 @@
+#- name: Make sure Remi Repository is installed
+#  ansible.builtin.yum:
+#    name: http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+#    state: present
+
+- name: Make sure remi-php74 repo is enabled
+  yum_repository:
+    name: remi-php74
+    enabled: yes
+    description: Remis PHP 7.4 RPM repository for Enterprise Linux 7 
+    mirrorlist: http://rpms.remirepo.net/enterprise/$releasever/php74/mirror
+    gpgcheck: 1
+    gpgkey: http://rpms.remirepo.net/RPM-GPG-KEY-remi
+
+- name: Make sure php php-mysqlnd and php-fpm are installed
+  ansible.builtin.yum:
+    name: 
+      - php
+      - php-mysqlnd
+      - php-fpm
+    state: present
+
+- name: Make sure user is set to nginx in /etc/php-fpm.d/www.conf
+  ansible.builtin.lineinfile:
+    path: /etc/php-fpm.d/www.conf
+    state: present
+    regexp: "^user = apache"
+    line: "user = nginx" 
+
+- name: Make sure group is set to nginx in /etc/php-fpm.d/www.conf
+  ansible.builtin.lineinfile:
+    path: /etc/php-fpm.d/www.conf
+    regexp: "^group = apache"
+    line: "group = nginx" 
+    state: present
+
+- name: Make sure listen is set to /var/run/php-fpm/php-fpm.sock;
+  ansible.builtin.lineinfile:
+    path: /etc/php-fpm.d/www.conf
+    regexp: "^listen = 127.0.0.1:9000"
+    line: "listen = /var/run/php-fpm/php-fpm.sock;"
+    state: present
+
+- name: Make sure listen.owner is set to nginx
+  ansible.builtin.lineinfile:
+    path: /etc/php-fpm.d/www.conf
+    regexp: "^listen.owner"
+    line: "listen.owner = nginx"
+    state: present
+
+- name: Make sure listen.group is set to nginx
+  ansible.builtin.lineinfile:
+    path: /etc/php-fpm.d/www.conf
+    regexp: "^listen.group"
+    line: "listen.group = nginx"
+    state: present
+
+- name: Make sure listen.mode is set to 0600
+  ansible.builtin.lineinfile:
+    path: /etc/php-fpm.d/www.conf
+    regexp: "^listen.mode"
+    line: "listen.mode = 0600"
+    state: present
+
+- name: Make sure php-fpm service is started
+  ansible.builtin.systemd:
+    name: php-fpm
+    state: started
+
+- name: Create /etc/nginx/conf.d/default.conf
+  ansible.builtin.template:
+    src: nginx.conf.d.default.j2
+    dest: /etc/nginx/conf.d/default.conf
+    owner: nginx
+    group: nginx
+    mode: 0600
+
+- name: Make sure info.php is in /usr/share/nginx/html
+  copy:
+    src: info.php
+    dest: /usr/share/nginx/html/info.php
+    owner: nginx
+    group: nginx
+    mode: 0600
+
+- name: Restart nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: restarted
+    

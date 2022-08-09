@@ -1,0 +1,40 @@
+- name: Make sure MySQL-python is present
+  ansible.builtin.yum:
+    name: MySQL-python
+    state: present
+
+- name: Make sure mariadb-server package is installed
+  become: true
+  ansible.builtin.yum:
+    name: mariadb-server
+    state: present
+
+- name: Make sure mariadb package is installed
+  ansible.builtin.yum:
+    name: mariadb
+    state: present
+
+- name: Makesure mariadb service is started and Enabled
+  ansible.builtin.systemd:
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: Mariadb set root password
+  become: true
+  mysql_user:
+    login_password: '{{mariadb_root_pwd}}'
+    check_implicit_admin: 'yes' 
+    host_all: yes
+    password: '{{mariadb_root_pwd}}'
+    state: present
+    name: 'root'
+  with_items:
+    - localhost
+    - 127.0.0.1
+    - ::1
+
+- name: Reload privilege tables
+  command: 'mysql -uroot -p{{mariadb_root_pwd}} -ne"FLUSH PRIVILEGES"'
+  changed_when: False
+    

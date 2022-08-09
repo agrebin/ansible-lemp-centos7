@@ -1,0 +1,20 @@
+- hosts: all
+  become: true
+  pre_tasks:
+    - name: Make sure epel repo is installed
+      ansible.builtin.yum:
+       name: epel-release
+       state: present
+       
+  vars:
+   server_domain_or_IP: 'testserver'
+   mariadb_root_pwd: 'pass'  
+   mariadb_remove_anon_users: 'y' 
+   mariadb_disable_remote_root: 'y' 
+   mariadb_remove_test_database: 'y'
+   mariadb_reload_privilege_tables: 'y' 
+
+  roles:
+   - nginx
+   - mariadb
+   - php-fpm
