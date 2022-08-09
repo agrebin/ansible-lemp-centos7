@@ -1,2 +1,10 @@
 To apply playbook on localhost:
-ansible-plabook --connection=local --inventory 127.0.0.1 --limit 127.0.0.1 lemp-playbook.yml -i ansible_hosts
+```ansible-plabook --connection=local --inventory 127.0.0.1 --limit 127.0.0.1 lemp-playbook.yml -i ansible_hosts```
+
+According to instructions in https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-on-centos-7
+this will create a default site, and provide either a domain name, or ip address, since getting the right ip address automatically can be ambiguous
+it is required to either provide the right ip address or dns name and set it on server_domain_or_IP variable on lemp-playbook.yml file.
+As default is setted with 'testserver' in that case and if you want to use this name and access it with localhost, edit your /etc/hosts file and add 
+testserver on 127.0.0.1
+
+You can also customize the mariadb mysql password by setting your mariadb_root_pwd variable 
